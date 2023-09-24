@@ -5,6 +5,8 @@ import pandas as pd
 import sqlalchemy
 from sqlalchemy import text
 
+tables = {}
+
 db_info = {'driver': 'ODBC Driver 17 for SQL Server',
             'server':'RyanPC' , 
             'database':'Ticker' ,
@@ -17,6 +19,7 @@ conn = sqlalchemy.create_engine('mssql+pyodbc://'+db_info['username']+':'+db_inf
                             '/' + db_info['database'] + \
                             '?driver=ODBC+Driver+17+for+SQL+Server')
 
+publish_date = None
 
 # Function to check if a table exists in the database
 def table_exists(conn, table_name):
@@ -34,6 +37,7 @@ def get_latest_date(cursor, table_name):
 
 def download_etfdb_fundflow(url):
     """Download fund flow data. Raw data are strings. """
+    global publish_date
     # Scrape the table from the URL
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
