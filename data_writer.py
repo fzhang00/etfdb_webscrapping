@@ -5,7 +5,15 @@ import pandas as pd
 import sqlalchemy
 from sqlalchemy import text
 
-tables = {}
+tables = {'etf_fund_flow_industry': "https://etfdb.com/etfs/industry/",
+          'etf_fund_flow_country': "https://etfdb.com/etfs/country/",
+          'etf_fund_flow_bond': "https://etfdb.com/etfs/bond/",
+          'etf_fund_flow_bond-duration': "https://etfdb.com/etfs/bond-duration/",
+          'etf_fund_flow_commodity': "https://etfdb.com/etfs/commodity/",
+          'etf_fund_flow_natural-resources': "https://etfdb.com/etfs/natural-resources/",
+          'etf_fund_flow_currency': "https://etfdb.com/etfs/currency/",
+          'etf_fund_flow_real-estate-region': "https://etfdb.com/etfs/real-estate-region/",
+          }
 
 db_info = {'driver': 'ODBC Driver 17 for SQL Server',
             'server':'RyanPC' , 
@@ -68,13 +76,13 @@ def download_etfdb_fundflow(url):
     return df
 
 
-def to_sql_table(table_name, df):
+def to_sql_table(table_name, df, force=False):
     """Insert df to SQL table. If table exists, append."""
     # Check if the table exists in the database
     if not table_exists(conn, table_name):
         df.to_sql(table_name, conn, if_exists='replace')
         print("Database doesn't exists. Create and write data")
-    elif publish_date > get_latest_date(conn, table_name):
+    elif (publish_date > get_latest_date(conn, table_name)) or force:
         df.to_sql(table_name, conn, if_exists='append')
         print("Append data")
     else:
@@ -107,7 +115,8 @@ def convert_to_num(df):
 
 if __name__ == "__main__":
     url = "https://etfdb.com/etfs/industry/"
-    raw_df = download_etfdb_fundflow(url)
-    to_sql_table('etf_fund_flow', raw_df)
-    df = convert_to_num(raw_df)
-    to_sql_table("etf_fund_flow_num", df)
+    for table, url in tables.items():
+        raw_df = download_etfdb_fundflow(url)
+        # to_sql_table('etf_fund_flow', raw_df, force=True)
+        df = convert_to_num(raw_df)
+        to_sql_table(table, df)
