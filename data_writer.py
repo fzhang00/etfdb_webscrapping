@@ -38,7 +38,7 @@ def table_exists(conn, table_name):
 
 def get_latest_date(cursor, table_name):
     # Query the latest date for the given symbol
-    query = f"SELECT MAX([Date]) FROM {table_name}"
+    query = f'SELECT MAX([Date]) FROM "{table_name}"'
     latest_date = cursor.execute(query)
     return latest_date.fetchone()[0]
 
@@ -100,6 +100,7 @@ def convert_to_num(df):
     str_cols = ['Industry', 'Date', 'power_ranking_sort_text']
     remove_dollar = lambda x: pd.to_numeric(x.replace('$', '').replace(',', ''), errors='ignore')
     remove_pct = lambda x: pd.to_numeric(x.replace('%',''), errors='ignore')
+
     for col in df.columns:
         if col not in str_cols:
             
@@ -110,6 +111,7 @@ def convert_to_num(df):
                     df[col] = df[col].apply(remove_pct)
                 else:
                     df[col] = df[col].apply(pd.to_numeric, errors='coerce')
+    df.replace('N/A', None, inplace=True)
     return df
 
 
